@@ -12,6 +12,8 @@ class ViewController: UIViewController, UICollectionViewDelegate, UICollectionVi
 
     @IBOutlet weak var collectionView:UICollectionView!
     
+    var pokemon = [Pockmon]()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
@@ -19,14 +21,37 @@ class ViewController: UIViewController, UICollectionViewDelegate, UICollectionVi
         collectionView.dataSource = self
         collectionView.delegate = self
         
+        parsePokemonCSV()
+    }
+    
+    func parsePokemonCSV() {
+        
+        let path = NSBundle.mainBundle().pathForResource("pokemon", ofType: "csv")!
+        
+        do {
+            let csv = try CSV(contentsOfURL: path)
+            let rows = csv.rows
+            
+            for row in rows {
+                let name = row["identifier"]!
+                let pokemonId = Int(row["id"]!)!
+                
+                let poke = Pockmon(name: name, pockdexId: pokemonId)
+                pokemon.append(poke)
+            }
+            
+        }catch let err as NSError {
+            print(err.debugDescription)
+        }
+        
     }
 
     func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
         
         if let cell = collectionView.dequeueReusableCellWithReuseIdentifier("PokeCell", forIndexPath: indexPath) as? PokeCell {
             
-            let pockmon = Pockmon(name: "test", pockdexId: indexPath.row + 1)
-            cell.configureCell(pockmon)
+            let poke = pokemon[indexPath.row]
+            cell.configureCell(poke)
             
             return cell
             
@@ -50,7 +75,7 @@ class ViewController: UIViewController, UICollectionViewDelegate, UICollectionVi
     }
     
     func collectionView(collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAtIndexPath indexPath: NSIndexPath) -> CGSize {
-        return CGSizeMake(180, 150)
+        return CGSizeMake(110, 110)
     }
 
 }
